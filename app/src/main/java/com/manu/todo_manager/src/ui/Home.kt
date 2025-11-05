@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -81,6 +82,7 @@ fun Home(viewModel: TodoViewModel = viewModel(), navController: NavController) {
 
     DisplayBackHandler()
 
+    var searchParam by remember { mutableStateOf("") }
     val isLoading = viewModel.isLoading.collectAsStateWithLifecycle()
 // for bottom sheet
     val modalBottomSheetState = rememberModalBottomSheetState(
@@ -96,6 +98,9 @@ fun Home(viewModel: TodoViewModel = viewModel(), navController: NavController) {
 
     // todo list
     val todoList by viewModel.todoList.collectAsStateWithLifecycle(initialValue = emptyList())
+    val todoSearchResult = todoList.filter {
+        (it.todoName.lowercase().contains(searchParam.trim().lowercase())) || (it.todoDescription.lowercase().contains(searchParam.trim().lowercase()))
+    }
 
     LaunchedEffect(Unit) { }
     val completedTodo by viewModel.completedTodo.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -190,105 +195,118 @@ fun Home(viewModel: TodoViewModel = viewModel(), navController: NavController) {
 
         ) { innerPadding ->
             // list of all Todo
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = customArrangement,
+            Column(
+                modifier = Modifier.fillMaxSize().padding(innerPadding).padding(10.dp),
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (todoList.size >= 1) {
-                    items(
-                        todoList,
-                        key = { it.Id }
-                    ) { todo ->
-                        ElevatedCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .height(90.dp)
-                                .clickable {
-                                    navController.navigate(
-                                        Routes.TodoDetails(
-                                            todoName = todo.todoName,
-                                            todoDestination = todo.todoDescription,
-                                            startDate = todo.startDate,
-                                            endDate = todo.endDate
-                                        )
-                                    )
-                                }
-                                .animateItem(
-                                    fadeOutSpec = tween(200),
-                                    fadeInSpec = tween(800)
-                                ),
-                            elevation = CardDefaults.elevatedCardElevation(20.dp),
-                            shape = CardDefaults.elevatedShape
-                        ) {
-                            Row(
+                OutlinedTextField(
+                    value = searchParam,
+                    onValueChange = {searchParam = it},
+                    placeholder = {Text("Search TODO")},
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    leadingIcon = {Icon(Icons.Default.Search,null)},
+                    singleLine = true
+                )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = customArrangement,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (todoList.size >= 1) {
+                        items(
+                            todoSearchResult,
+                            key = { it.Id }
+                        ) { todo ->
+                            ElevatedCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            )
-                            {
-                                Column(
-                                    Modifier.fillMaxWidth(0.8f)
-                                ) {
-                                    Text(
-                                        text = todo.todoName,
-                                        fontSize = 24.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                    Text(
-                                        text = todo.todoDescription,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        fontSize = 20.sp,
-                                        color = Color.Gray
-                                    )
-                                }
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = null,
-                                    modifier = Modifier.clickable(
-                                        onClick = {
-                                            navController.navigate(
-                                                Routes.EditTodo(
-                                                    id = todo.Id,
-                                                    todoName = todo.todoName,
-                                                    todoDestination = todo.todoDescription,
-                                                    startDate = todo.startDate,
-                                                    endDate = todo.endDate
-                                                )
+                                    .padding(10.dp)
+                                    .height(90.dp)
+                                    .clickable {
+                                        navController.navigate(
+                                            Routes.TodoDetails(
+                                                todoName = todo.todoName,
+                                                todoDestination = todo.todoDescription,
+                                                startDate = todo.startDate,
+                                                endDate = todo.endDate
                                             )
-                                        }
-                                    )
+                                        )
+                                    }
+                                    .animateItem(
+                                        fadeOutSpec = tween(200),
+                                        fadeInSpec = tween(800)
+                                    ),
+                                elevation = CardDefaults.elevatedCardElevation(10.dp),
+                                shape = CardDefaults.elevatedShape
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 )
-                                Spacer(Modifier.width(10.dp))
-                                HomeScreenCheckBox {
-                                    viewModel.deleteTodo(todo.Id)
-                                    viewModel.addCompletedTodo(
-                                        CompletedTodo(
-                                            id = todo.Id,
-                                            todoName = todo.todoName,
-                                            todoDescription = todo.todoDescription
+                                {
+                                    Column(
+                                        Modifier.fillMaxWidth(0.8f)
+                                    ) {
+                                        Text(
+                                            text = todo.todoName,
+                                            fontSize = 24.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            fontWeight = FontWeight.Bold,
+                                        )
+                                        Text(
+                                            text = todo.todoDescription,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            fontSize = 20.sp,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = null,
+                                        modifier = Modifier.clickable(
+                                            onClick = {
+                                                navController.navigate(
+                                                    Routes.EditTodo(
+                                                        id = todo.Id,
+                                                        todoName = todo.todoName,
+                                                        todoDestination = todo.todoDescription,
+                                                        startDate = todo.startDate,
+                                                        endDate = todo.endDate
+                                                    )
+                                                )
+                                            }
                                         )
                                     )
+                                    Spacer(Modifier.width(10.dp))
+                                    HomeScreenCheckBox {
+                                        viewModel.deleteTodo(todo.Id)
+                                        viewModel.addCompletedTodo(
+                                            CompletedTodo(
+                                                id = todo.Id,
+                                                todoName = todo.todoName,
+                                                todoDescription = todo.todoDescription
+                                            )
+                                        )
+                                    }
+
+
                                 }
-
-
                             }
                         }
-                    }
-                } else {
-                    item {
-                        Text(
-                            text = "There is no Todo",
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    } else {
+                        item {
+                            Text(
+                                text = "There is no Todo",
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
