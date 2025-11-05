@@ -2,6 +2,7 @@ package com.manu.todo_manager.src.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -76,44 +77,26 @@ fun ShowTodoDetails(todo: Todo,navController: NavController){
         }
     ) {innerPadding->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(10.dp)
+            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(10.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
-            OutlinedTextField(
-                value = todo.todoName,
-                onValueChange = {},
-                readOnly = true,
-                label = {Text("TODO Name", color = Color.Blue)},
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
-            )
+           Text(
+               text = todo.todoName,
+               fontSize = 50.sp,
+               fontWeight = FontWeight.ExtraBold
+           )
+            Spacer(Modifier.height(10.dp))
+            if(!todo.startDate.equals("NA") && !todo.endDate.equals("NA")){
+                Text(
+                    text = "${todo.startDate} to ${todo.endDate}",
+                    fontSize = 16.sp
+                )
+            }
             Spacer(Modifier.height(20.dp))
-            OutlinedTextField(
-                value = todo.todoDescription,
-                onValueChange = {},
-                readOnly = true,
-                label = {Text("TODO Description", color = Color.Blue)},
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
-            )
-            Spacer(Modifier.height(20.dp))
-
-            OutlinedTextField(
-                value = todo.startDate,
-                onValueChange = {},
-                readOnly = true,
-                label = {Text("Start Date", color = Color.Blue)},
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
-            )
-            Spacer(Modifier.height(20.dp))
-
-            OutlinedTextField(
-                value = todo.endDate,
-                onValueChange = {},
-                readOnly = true,
-                label = {Text("End Date", color = Color.Blue)},
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
+            Text(
+                text = todo.todoDescription,
+                fontSize = 30.sp
             )
         }
     }
